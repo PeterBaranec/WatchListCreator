@@ -1,35 +1,15 @@
-const searchBtn = document.getElementById("search-btn");
-const apiKey = "9b6b2dd5";
+const allKeys = Object.keys(localStorage);
+const movieArr = [];
+console.log(movieArr);
+console.log(allKeys);
 
-async function fetchMovieDetails(movieID) {
-  const response = await fetch(
-    `http://www.omdbapi.com/?apikey=${apiKey}&i=${movieID}`
-  );
-  return await response.json();
-}
-
-async function searchMovies(searchQuery) {
-  const response = await fetch(
-    `http://www.omdbapi.com/?apikey=${apiKey}&s=${searchQuery}`
-  );
-  const data = await response.json();
-  if (data.Search) {
-    const moviePromises = data.Search.map((movie) =>
-      fetchMovieDetails(movie.imdbID)
-    );
-    return Promise.all(moviePromises);
-  } else {
-    return []; // Return an empty array if there are no search results
-  }
-}
-
-searchBtn.addEventListener("click", function () {
-  const searchBox = document.getElementById("movie-search").value;
-  searchMovies(searchBox).then((movieDetails) => {
-    loadMovies(movieDetails);
-    addToWatchList();
+function renderWatchList(movies) {
+  allKeys.map((key) => {
+    const movie = localStorage.getItem(key);
+    movieArr.push(JSON.parse(movie));
+    loadMovies(movies);
   });
-});
+}
 
 function loadMovies(movies) {
   const moviesEL = document.getElementById("movies");
@@ -49,25 +29,29 @@ function loadMovies(movies) {
                 <div class="movie">
                     <p class="movie-duration">${movie.Runtime}</p>
                     <p class="movie-genre">${movie.Genre}</p>
-                    <a id="movie-btn" class="movie-btn" data-id=${movie.imdbID}>Watchlist</a>
+                    <a href="#" id="movie-btn" data-id=${movie.imdbID}>Remove</a>
                 </div>
                 <p class="movie movie-description">${movie.Plot}</p>
             </div>
         </div>
         `;
     moviesEL.insertAdjacentHTML("beforeend", movieHtml);
-    addToWatchList(movie, movie.imdbID);
+    removeItemFromLocalStorage(movie.imdbID);
   });
 }
 
-function addToWatchList(movies, movieID) {
+function removeItemFromLocalStorage(movieID) {
   const movieBtn = document.querySelectorAll("#movie-btn");
-
   movieBtn.forEach((btn) => {
     btn.addEventListener("click", function () {
       if (btn.dataset.id === movieID) {
-        localStorage.setItem(movieID, JSON.stringify(movies));
+        localStorage.removeItem(movieID);
+
+        const movieEL = btn.closest(".movies-section");
+        movieEL.remove();
       }
     });
   });
 }
+
+renderWatchList(movieArr);

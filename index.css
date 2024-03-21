@@ -126,3 +126,7 @@ input::placeholder {
     font-weight: 500;
     padding-right: 1rem;
 }
+
+.movie-btn {
+    cursor: pointer;
+}
